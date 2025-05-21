@@ -88,14 +88,15 @@ function sanitizeClaimData(claim: Omit<Claim, 'id'>): Omit<Claim, 'id'> {
     // Ensure arrays are initialized
     alerts: Array.isArray(claim.alerts) ? claim.alerts : [],
     
-    // Ensure strings are trimmed
-    claim_number: claim.claim_number.trim(),
-    department: claim.department.trim(),
-    claim_category: claim.claim_category.trim(),
-    category: claim.category.trim(),
-    description: claim.description?.trim() || '',
-    installer_name: claim.installer_name?.trim() || null,
-    invoice_link: claim.invoice_link?.trim() || null,
+    // Safely trim strings with null checks
+    claim_number: (claim.claim_number ?? '').trim(),
+    department: (claim.department ?? '').trim(),
+    claim_category: (claim.claim_category ?? '').trim(),
+    product_category: (claim.product_category ?? '').trim(), // Changed from category to product_category
+    description: (claim.description ?? '').trim(),
+    installer_name: claim.installer_name ? claim.installer_name.trim() : null,
+    invoice_link: claim.invoice_link ? claim.invoice_link.trim() : null,
+    identified_cause: claim.identified_cause ? claim.identified_cause.trim() : null,
   };
 }
 
