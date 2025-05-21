@@ -51,7 +51,7 @@ const SmartChatPage: React.FC = () => {
   const [showExamples, setShowExamples] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
     api: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
     headers: {
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -68,9 +68,8 @@ const SmartChatPage: React.FC = () => {
 
   const handleExampleClick = (question: string) => {
     const fakeEvent = {
-      preventDefault: () => {},
-      target: { value: question },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
+      target: { value: question }
+    } as React.ChangeEvent<HTMLInputElement>;
     handleInputChange(fakeEvent);
   };
 
@@ -160,9 +159,6 @@ const SmartChatPage: React.FC = () => {
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    <p className="text-xs mt-1 opacity-70">
-                      {new Date().toLocaleTimeString()}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -177,6 +173,12 @@ const SmartChatPage: React.FC = () => {
                     <Loader2 className="w-5 h-5 animate-spin text-corporate-secondary" />
                   </div>
                 </div>
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md">
+                <p className="font-medium">Error occurred:</p>
+                <p className="text-sm">{error.message || "Failed to connect to the AI service. Please try again later."}</p>
               </div>
             )}
             <div ref={messagesEndRef} />
