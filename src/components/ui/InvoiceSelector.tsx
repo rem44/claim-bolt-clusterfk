@@ -17,7 +17,6 @@ const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({ onInvoiceSelect, sele
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Find selected invoice when component mounts or selectedInvoice changes
   useEffect(() => {
     if (selectedInvoice) {
       const invoice = invoices.find(i => i.invoice_number === selectedInvoice);
@@ -27,12 +26,19 @@ const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({ onInvoiceSelect, sele
     }
   }, [selectedInvoice, invoices]);
 
-  const filteredInvoices = invoices.filter(invoice => 
-    !selectedInvoiceData && (
-      invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      invoice.client?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );
+  const filteredInvoices = searchQuery
+    ? invoices.filter(invoice =>
+        invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        invoice.client?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : invoices;
+
+  console.log('InvoiceSelector state:', {
+    totalInvoices: invoices.length,
+    filteredCount: filteredInvoices.length,
+    searchQuery,
+    selectedInvoice
+  });
 
   const handleInvoiceSelect = (invoice: Invoice) => {
     setSelectedInvoiceData(invoice);
@@ -54,18 +60,11 @@ const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({ onInvoiceSelect, sele
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    if (selectedInvoiceData) {
-      setSelectedInvoiceData(null);
-    }
     setIsDropdownOpen(true);
     setHighlightedIndex(-1);
   };
 
   const handleInputFocus = () => {
-    if (selectedInvoiceData) {
-      setSearchQuery('');
-      setSelectedInvoiceData(null);
-    }
     setIsDropdownOpen(true);
   };
 
@@ -97,7 +96,6 @@ const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({ onInvoiceSelect, sele
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

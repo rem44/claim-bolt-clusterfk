@@ -17,7 +17,6 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, selecte
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Find selected client when component mounts or selectedClientId changes
   useEffect(() => {
     if (selectedClientId) {
       const client = clients.find(c => c.id === selectedClientId);
@@ -27,12 +26,19 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, selecte
     }
   }, [selectedClientId, clients]);
 
-  const filteredClients = clients.filter(client => 
-    !selectedClient && (
-      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.code.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );
+  const filteredClients = searchQuery
+    ? clients.filter(client =>
+        client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        client.code.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : clients;
+
+  console.log('ClientSelector state:', {
+    totalClients: clients.length,
+    filteredCount: filteredClients.length,
+    searchQuery,
+    selectedClientId
+  });
 
   const handleClientSelect = (client: Client) => {
     setSelectedClient(client);
@@ -54,18 +60,11 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, selecte
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    if (selectedClient) {
-      setSelectedClient(null);
-    }
     setIsDropdownOpen(true);
     setHighlightedIndex(-1);
   };
 
   const handleInputFocus = () => {
-    if (selectedClient) {
-      setSearchQuery('');
-      setSelectedClient(null);
-    }
     setIsDropdownOpen(true);
   };
 
@@ -97,7 +96,6 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, selecte
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

@@ -21,6 +21,7 @@ export const InvoicesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       setLoading(true);
       const data = await getInvoices();
+      console.log('Invoices fetched:', data.length, 'records');
       setInvoices(data);
       setError(null);
     } catch (err) {
