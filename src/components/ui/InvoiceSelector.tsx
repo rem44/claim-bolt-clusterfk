@@ -41,6 +41,7 @@ const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({ onInvoiceSelect, sele
   });
 
   const handleInvoiceSelect = (invoice: Invoice) => {
+    console.log('Selected invoice:', invoice);
     setSelectedInvoiceData(invoice);
     onInvoiceSelect(invoice.invoice_number);
     setIsDropdownOpen(false);
@@ -59,6 +60,7 @@ const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({ onInvoiceSelect, sele
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    console.log('Input value changed:', value);
     setSearchQuery(value);
     setIsDropdownOpen(true);
     setHighlightedIndex(-1);
@@ -200,6 +202,11 @@ const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({ onInvoiceSelect, sele
           {error}
         </div>
       )}
+
+      {/* Debug information */}
+      <div className="mt-1 text-xs text-gray-400">
+        Total invoices: {invoices.length}, Filtered: {filteredInvoices.length}
+      </div>
     </div>
   );
 };

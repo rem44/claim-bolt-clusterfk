@@ -21,6 +21,7 @@ export const ClientsProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setLoading(true);
       const data = await getClients();
       console.log('Clients fetched:', data.length, 'records');
+      console.log('Client data sample:', data.slice(0, 2));
       setClients(data);
       setError(null);
     } catch (err) {
