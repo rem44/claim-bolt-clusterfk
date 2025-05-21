@@ -1,5 +1,5 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.7';
-import { OpenAI } from 'npm:openai@4.28.0';
+import { OpenAIStream, StreamingTextResponse } from 'npm:ai@3.0.0';
+import { Configuration, OpenAIApi } from 'npm:openai-edge@1.2.2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,10 +7,10 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+const configuration = new Configuration({
+  apiKey: Deno.env.get('OPENAI_API_KEY'),
+});
+const openai = new OpenAIApi(configuration);
 
 Deno.serve(async (req) => {
   try {
@@ -39,79 +39,41 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    );
-
-    // Initialize OpenAI client
-    const openai = new OpenAI({
-      apiKey: Deno.env.get('OPENAI_API_KEY'),
-    });
-
-    // Get relevant context from the database based on the user's question
-    const latestMessage = messages[messages.length - 1].content.toLowerCase();
-    let context = '';
-
-    if (latestMessage.includes('product') || latestMessage.includes('carpet')) {
-      const { data: products } = await supabaseClient
-        .from('products')
-        .select('*')
-        .limit(5);
-      
-      if (products) {
-        context += '\nProduct information:\n' + JSON.stringify(products, null, 2);
-      }
-    }
-
-    if (latestMessage.includes('claim') || latestMessage.includes('warranty')) {
-      const { data: claims } = await supabaseClient
-        .from('claims')
-        .select(`
-          *,
-          client:clients(name)
-        `)
-        .limit(5);
-      
-      if (claims) {
-        context += '\nClaim information:\n' + JSON.stringify(claims, null, 2);
-      }
-    }
-
-    // Prepare the messages for OpenAI
-    const systemPrompt = `You are Shawn-Bot, a knowledgeable assistant for Venture Claims Management.
+    // Create the system message
+    const systemMessage = {
+      role: 'system',
+      content: `You are Shawn-Bot, a knowledgeable assistant for Venture Claims Management.
 You help users with technical details, installation guidelines, warranty information, and maintenance guidance for carpet and flooring products.
 Be professional, concise, and helpful. If you're not sure about something, say so.
 
-Here is some context from our database that might be relevant:
-${context}`;
+You have expertise in:
+- Product specifications and technical details
+- Installation procedures and best practices
+- Warranty terms and conditions
+- Maintenance guidelines and cleaning procedures
+- Troubleshooting common issues
 
-    const apiMessages: ChatMessage[] = [
-      { role: 'system', content: systemPrompt },
-      ...messages,
-    ];
+When providing information:
+1. Be specific and accurate
+2. Reference industry standards when applicable
+3. Provide step-by-step instructions when needed
+4. Suggest preventive measures when relevant`
+    };
 
-    // Get the response from OpenAI
-    const completion = await openai.chat.completions.create({
+    // Get the completion from OpenAI
+    const response = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
-      messages: apiMessages,
+      messages: [systemMessage, ...messages],
+      stream: true,
       temperature: 0.7,
       max_tokens: 500,
     });
 
-    // Return the response
-    return new Response(
-      JSON.stringify({
-        message: completion.choices[0].message.content,
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+    // Convert the response to a streaming response
+    const stream = OpenAIStream(response);
+
+    // Return the streaming response with CORS headers
+    return new StreamingTextResponse(stream, { headers: corsHeaders });
   } catch (error) {
     console.error('Error:', error);
     return new Response(

@@ -50,7 +50,7 @@ const EXAMPLE_QUESTIONS: ExampleCategory[] = [
 const SmartChatPage: React.FC = () => {
   const [showExamples, setShowExamples] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
     api: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
     headers: {
