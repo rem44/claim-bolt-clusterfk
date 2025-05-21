@@ -15,10 +15,11 @@ import AlertsPage from './pages/AlertsPage';
 import SmartChatPage from './pages/SmartChatPage';
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import { ClaimsProvider } from './context/ClaimsContext';
 import { ProductsProvider } from './context/ProductsContext';
 import { InvoicesProvider } from './context/InvoicesContext';
-import { ClientsProvider } from './context/ClientsProvider';
+import { ClientsProvider } from './context/ClientsContext';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -54,6 +55,7 @@ function App() {
                       <Route path="settings" element={<SettingsPage />} />
                       <Route path="clients" element={<ClientsPage />} />
                       <Route path="reports" element={<ReportsPage />} />
+                      <Route path="analytics" element={<AnalyticsDashboard />} />
                       <Route path="help" element={<HelpPage />} />
                       <Route path="alerts" element={<AlertsPage />} />
                       <Route path="chat" element={<SmartChatPage />} />

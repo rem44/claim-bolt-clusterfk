@@ -9,7 +9,8 @@ import {
   HelpCircle,
   LogOut,
   AlertTriangle,
-  Bot
+  Bot,
+  PieChart
 } from 'lucide-react';
 import { Layout as LayoutIcon } from 'lucide-react';
 
@@ -28,6 +29,7 @@ const Sidebar: React.FC = () => {
         <NavItem to="/claims" icon={<FileText size={20} />} text="All Claims" />
         <NavItem to="/alerts" icon={<AlertTriangle size={20} />} text="Alerts" />
         <NavItem to="/clients" icon={<Users size={20} />} text="Clients" />
+        <NavItem to="/analytics" icon={<PieChart size={20} />} text="Analytics" />
         <NavItem to="/reports" icon={<BarChart2 size={20} />} text="Reports" />
         <NavItem to="/chat" icon={<Bot size={20} />} text="Smart Chat" />
         <NavItem to="/settings" icon={<Settings size={20} />} text="Settings" />
