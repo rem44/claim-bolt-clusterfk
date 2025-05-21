@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { useClaims } from '../context/ClaimsContext';
 import { ClaimStatus, Department, ClaimCategory, ProductCategory } from '../types/claim';
 import { Client } from '../types/client';
@@ -7,6 +8,8 @@ import ClientSelector from '../components/ui/ClientSelector';
 import InvoiceSelector from '../components/ui/InvoiceSelector';
 import { 
   ArrowLeft, 
+  ChevronRight,
+  ChevronLeft,
   Save,
   Upload,
   FileText,
@@ -14,14 +17,10 @@ import {
   Hash
 } from 'lucide-react';
 
-interface ImportStatus {
-  type: 'success' | 'error' | 'info';
-  message: string;
-}
-
 const CreateClaim: React.FC = () => {
   const navigate = useNavigate();
   const { addClaim } = useClaims();
+  const user = useUser();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     claimNumber: `CLM-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000)).substring(1)}`,
@@ -29,7 +28,7 @@ const CreateClaim: React.FC = () => {
     clientName: '',
     department: '',
     claimCategory: '',
-    product_category: '', // Changed from category to product_category
+    category: '',
     installed: false,
     installationDate: '',
     installerName: '',
@@ -78,7 +77,7 @@ const CreateClaim: React.FC = () => {
       if (!formData.clientId) errors.clientId = 'Client selection is required';
       if (!formData.department) errors.department = 'Department is required';
       if (!formData.claimCategory) errors.claimCategory = 'Claim category is required';
-      if (!formData.product_category) errors.product_category = 'Product category is required';
+      if (!formData.category) errors.category = 'Product category is required';
       if (formData.installed) {
         if (!formData.installationDate) {
           errors.installationDate = 'Installation date is required when product is installed';
@@ -94,6 +93,13 @@ const CreateClaim: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      setValidationErrors({
+        submit: 'You must be logged in to create a claim'
+      });
+      return;
+    }
+
     if (validateStep(currentStep)) {
       setIsSubmitting(true);
       try {
@@ -104,27 +110,36 @@ const CreateClaim: React.FC = () => {
           status: ClaimStatus.New,
           department: formData.department as Department,
           claim_category: formData.claimCategory as ClaimCategory,
-          product_category: formData.product_category as ProductCategory, // Changed from category to product_category
+          product_category: formData.category as ProductCategory,
           installed: formData.installed,
           installation_date: formData.installed && formData.installationDate ? new Date(formData.installationDate).toISOString() : null,
           installer_name: formData.installed ? formData.installerName : null,
-          invoice_link: formData.invoiceLink,
-          description: formData.description,
+          invoice_link: formData.invoiceLink || null,
+          description: formData.description || '',
           solution_amount: 0,
           claimed_amount: 0,
           saved_amount: 0,
           last_updated: new Date().toISOString(),
           alerts: [],
           alert_count: 0,
-          last_alert_check: new Date().toISOString()
+          last_alert_check: new Date().toISOString(),
+          created_by: user.id
         };
 
+        console.log('Submitting claim data:', newClaim);
         const claim = await addClaim(newClaim);
+        console.log('Claim created:', claim);
         navigate(`/claims/${claim.id}`);
       } catch (error) {
         console.error('Error creating claim:', error);
+        
+        let errorMessage = 'Failed to create claim. Please try again.';
+        if (error instanceof Error) {
+          errorMessage = `Error: ${error.message}`;
+        }
+        
         setValidationErrors({
-          submit: 'Failed to create claim. Please try again.'
+          submit: errorMessage
         });
       } finally {
         setIsSubmitting(false);
@@ -232,15 +247,15 @@ const CreateClaim: React.FC = () => {
             )}
           </div>
 
-          <div className={validationErrors.product_category ? 'has-error' : ''}>
+          <div className={validationErrors.category ? 'has-error' : ''}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Product Category <span className="text-red-500">*</span>
             </label>
             <select 
-              value={formData.product_category}
-              onChange={(e) => handleChange('product_category', e.target.value)}
+              value={formData.category}
+              onChange={(e) => handleChange('category', e.target.value)}
               className={`w-full p-2 border ${
-                validationErrors.product_category ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                validationErrors.category ? 'border-red-500 bg-red-50' : 'border-gray-300'
               } rounded-md focus:outline-none focus:ring-2 focus:ring-corporate-secondary focus:border-transparent`}
             >
               <option value="">Select Product Category</option>
@@ -248,8 +263,8 @@ const CreateClaim: React.FC = () => {
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>
-            {validationErrors.product_category && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.product_category}</p>
+            {validationErrors.category && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.category}</p>
             )}
           </div>
 
