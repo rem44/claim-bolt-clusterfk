@@ -41,7 +41,6 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, selecte
   });
 
   const handleClientSelect = (client: Client) => {
-    console.log('Selected client:', client);
     setSelectedClient(client);
     onClientSelect(client);
     setIsDropdownOpen(false);
@@ -60,7 +59,6 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, selecte
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    console.log('Input value changed:', value);
     setSearchQuery(value);
     setIsDropdownOpen(true);
     setHighlightedIndex(-1);
@@ -139,6 +137,11 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, selecte
         )}
       </div>
 
+      {/* Debug information */}
+      <div className="text-xs text-gray-500 mt-1">
+        Available clients: {clients.length}, Filtered: {filteredClients.length}
+      </div>
+
       {selectedClient && (
         <div className="mt-1.5 px-2 py-1 bg-corporate-light rounded-md text-sm">
           <div className="flex items-center justify-between">
@@ -199,11 +202,6 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ onClientSelect, selecte
           {error}
         </div>
       )}
-
-      {/* Debug information */}
-      <div className="mt-1 text-xs text-gray-400">
-        Total clients: {clients.length}, Filtered: {filteredClients.length}
-      </div>
     </div>
   );
 };
