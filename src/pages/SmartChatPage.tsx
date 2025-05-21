@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, Loader2, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import ShawnBot from '../components/icons/ShawnBot';
+import { useChat } from 'ai';
 
 interface Message {
   id: string;
@@ -54,11 +55,15 @@ const EXAMPLE_QUESTIONS: ExampleCategory[] = [
 ];
 
 const SmartChatPage: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showExamples, setShowExamples] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    api: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+    headers: {
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    },
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,37 +73,12 @@ const SmartChatPage: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: inputValue,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
-    setIsLoading(true);
-    setShowExamples(false);
-
-    // TODO: Replace with actual API call to your AI service
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: 'This is a placeholder response. The AI integration will be implemented soon.',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 1000);
-  };
-
   const handleExampleClick = (question: string) => {
-    setInputValue(question);
+    const fakeEvent = {
+      preventDefault: () => {},
+      target: { value: question },
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    handleInputChange(fakeEvent);
   };
 
   return (
@@ -156,24 +136,24 @@ const SmartChatPage: React.FC = () => {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map(message => (
+            {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
                   className={`flex items-start space-x-2 max-w-[80%] ${
-                    message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                    message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
                   }`}
                 >
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.type === 'user' 
+                      message.role === 'user' 
                         ? 'bg-corporate-secondary text-white' 
                         : 'bg-corporate-light text-corporate-secondary'
                     }`}
                   >
-                    {message.type === 'user' ? (
+                    {message.role === 'user' ? (
                       <User size={16} />
                     ) : (
                       <ShawnBot className="w-4 h-4" />
@@ -181,14 +161,14 @@ const SmartChatPage: React.FC = () => {
                   </div>
                   <div
                     className={`rounded-lg p-3 ${
-                      message.type === 'user'
+                      message.role === 'user'
                         ? 'bg-corporate-secondary text-white'
                         : 'bg-gray-100 text-gray-900'
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     <p className="text-xs mt-1 opacity-70">
-                      {message.timestamp.toLocaleTimeString()}
+                      {new Date().toLocaleTimeString()}
                     </p>
                   </div>
                 </div>
@@ -214,14 +194,14 @@ const SmartChatPage: React.FC = () => {
             <div className="flex space-x-4">
               <input
                 type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                value={input}
+                onChange={handleInputChange}
                 placeholder="Ask Shawn-Bot about products, installation, warranty, or maintenance..."
                 className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-corporate-secondary focus:border-transparent"
               />
               <button
                 type="submit"
-                disabled={!inputValue.trim() || isLoading}
+                disabled={!input.trim() || isLoading}
                 className="px-4 py-2 bg-corporate-secondary text-white rounded-md hover:bg-corporate-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send size={20} />
