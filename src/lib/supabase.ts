@@ -9,3 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase credentials. Please connect to Supabase using the "Connect to Supabase" button.');
+}
