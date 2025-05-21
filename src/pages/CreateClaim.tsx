@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClaims } from '../context/ClaimsContext';
 import { ClaimStatus, Department, ClaimCategory, ProductCategory } from '../types/claim';
@@ -7,14 +7,17 @@ import ClientSelector from '../components/ui/ClientSelector';
 import InvoiceSelector from '../components/ui/InvoiceSelector';
 import { 
   ArrowLeft, 
-  ChevronRight,
-  ChevronLeft,
   Save,
   Upload,
   FileText,
   Calendar,
   Hash
 } from 'lucide-react';
+
+interface ImportStatus {
+  type: 'success' | 'error' | 'info';
+  message: string;
+}
 
 const CreateClaim: React.FC = () => {
   const navigate = useNavigate();
@@ -26,7 +29,7 @@ const CreateClaim: React.FC = () => {
     clientName: '',
     department: '',
     claimCategory: '',
-    category: '',
+    product_category: '', // Changed from category to product_category
     installed: false,
     installationDate: '',
     installerName: '',
@@ -75,7 +78,7 @@ const CreateClaim: React.FC = () => {
       if (!formData.clientId) errors.clientId = 'Client selection is required';
       if (!formData.department) errors.department = 'Department is required';
       if (!formData.claimCategory) errors.claimCategory = 'Claim category is required';
-      if (!formData.category) errors.category = 'Product category is required';
+      if (!formData.product_category) errors.product_category = 'Product category is required';
       if (formData.installed) {
         if (!formData.installationDate) {
           errors.installationDate = 'Installation date is required when product is installed';
@@ -101,7 +104,7 @@ const CreateClaim: React.FC = () => {
           status: ClaimStatus.New,
           department: formData.department as Department,
           claim_category: formData.claimCategory as ClaimCategory,
-          category: formData.category as ProductCategory,
+          product_category: formData.product_category as ProductCategory, // Changed from category to product_category
           installed: formData.installed,
           installation_date: formData.installed && formData.installationDate ? new Date(formData.installationDate).toISOString() : null,
           installer_name: formData.installed ? formData.installerName : null,
@@ -229,15 +232,15 @@ const CreateClaim: React.FC = () => {
             )}
           </div>
 
-          <div className={validationErrors.category ? 'has-error' : ''}>
+          <div className={validationErrors.product_category ? 'has-error' : ''}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Product Category <span className="text-red-500">*</span>
             </label>
             <select 
-              value={formData.category}
-              onChange={(e) => handleChange('category', e.target.value)}
+              value={formData.product_category}
+              onChange={(e) => handleChange('product_category', e.target.value)}
               className={`w-full p-2 border ${
-                validationErrors.category ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                validationErrors.product_category ? 'border-red-500 bg-red-50' : 'border-gray-300'
               } rounded-md focus:outline-none focus:ring-2 focus:ring-corporate-secondary focus:border-transparent`}
             >
               <option value="">Select Product Category</option>
@@ -245,8 +248,8 @@ const CreateClaim: React.FC = () => {
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>
-            {validationErrors.category && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.category}</p>
+            {validationErrors.product_category && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.product_category}</p>
             )}
           </div>
 
