@@ -1,3 +1,5 @@
+import { Client } from './client';
+
 export enum ClaimStatus {
   New = 'New',
   Screening = 'Screening',
@@ -77,29 +79,28 @@ export interface ClaimAlert {
 
 export interface Claim {
   id: string;
-  claimNumber: string;
-  clientName: string;
-  clientId: string;
-  creationDate: Date;
+  claim_number: string;
+  client_id: string;
+  creation_date: string;
   status: ClaimStatus;
   department: Department;
-  claimCategory: ClaimCategory;
-  identifiedCause?: string;
+  claim_category: ClaimCategory;
+  product_category: ProductCategory;
+  identified_cause?: string;
   installed: boolean;
-  installationDate?: Date;
-  installerName?: string;
-  invoiceLink?: string;
-  solutionAmount: number;
-  claimedAmount: number;
-  savedAmount: number;
+  installation_date?: string | null;
+  installer_name?: string | null;
+  invoice_link?: string | null;
+  solution_amount: number;
+  claimed_amount: number;
+  saved_amount: number;
   description?: string;
-  category: ProductCategory;
   products: ClaimProduct[];
   documents: ClaimDocument[];
   checklists?: ClaimChecklist[];
   communications?: ClaimCommunication[];
   assignedTo?: string;
-  lastUpdated: Date;
+  last_updated: string;
   alerts: ClaimAlert[];
   alert_count: number;
   last_alert_check: string;
