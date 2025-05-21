@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "mkdir -p dist/sample-data && vite build",
+    "prebuild": "mkdir -p dist/sample-data",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
