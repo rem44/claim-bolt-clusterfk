@@ -1,14 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, Loader2, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import ShawnBot from '../components/icons/ShawnBot';
-import { useChat } from 'ai';
-
-interface Message {
-  id: string;
-  type: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+import { useChat } from 'ai/react';
 
 interface ExampleCategory {
   title: string;
