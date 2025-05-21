@@ -1,0 +1,237 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, User, Loader2, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import ShawnBot from '../components/icons/ShawnBot';
+
+interface Message {
+  id: string;
+  type: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+interface ExampleCategory {
+  title: string;
+  questions: string[];
+}
+
+const EXAMPLE_QUESTIONS: ExampleCategory[] = [
+  {
+    title: 'Technical Details',
+    questions: [
+      'What are the specifications for the Venture Modular Carpet - Linear Pattern?',
+      'What is the recommended pile height for commercial installations?',
+      'What backing systems are available for broadloom products?',
+      'What is the standard width for carpet tiles?'
+    ]
+  },
+  {
+    title: 'Installation Guidelines',
+    questions: [
+      'What are the acclimation requirements before installation?',
+      'What adhesive should be used for carpet tiles on raised floors?',
+      'What is the recommended temperature range during installation?',
+      'How should seams be handled in broadloom installations?'
+    ]
+  },
+  {
+    title: 'Warranty Information',
+    questions: [
+      'What is covered under the standard warranty?',
+      'How long is the warranty period for commercial installations?',
+      'What conditions void the product warranty?',
+      'How do I submit a warranty claim?'
+    ]
+  },
+  {
+    title: 'Maintenance Guidance',
+    questions: [
+      'What is the recommended cleaning schedule for high-traffic areas?',
+      'Which cleaning products are approved for use?',
+      'How should spills be handled immediately?',
+      'What is the proper procedure for deep cleaning?'
+    ]
+  }
+];
+
+const SmartChatPage: React.FC = () => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showExamples, setShowExamples] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: inputValue,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setIsLoading(true);
+    setShowExamples(false);
+
+    // TODO: Replace with actual API call to your AI service
+    setTimeout(() => {
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: 'This is a placeholder response. The AI integration will be implemented soon.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const handleExampleClick = (question: string) => {
+    setInputValue(question);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 h-[calc(100vh-6rem)]">
+      <div className="flex gap-6 h-full">
+        {/* Examples Panel */}
+        <div className="w-80 bg-white rounded-lg shadow-sm overflow-hidden flex-shrink-0">
+          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+            <div className="flex items-center">
+              <HelpCircle className="mr-2 text-corporate-secondary" />
+              <h2 className="font-medium">Example Questions</h2>
+            </div>
+            <button
+              onClick={() => setShowExamples(!showExamples)}
+              className="text-gray-500 hover:text-corporate-secondary transition-colors"
+            >
+              {showExamples ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+          </div>
+          {showExamples && (
+            <div className="p-4 space-y-6">
+              {EXAMPLE_QUESTIONS.map((category, index) => (
+                <div key={index}>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">{category.title}</h3>
+                  <ul className="space-y-2">
+                    {category.questions.map((question, qIndex) => (
+                      <li key={qIndex}>
+                        <button
+                          onClick={() => handleExampleClick(question)}
+                          className="text-left text-sm text-gray-600 hover:text-corporate-secondary hover:bg-gray-50 p-2 rounded-md w-full transition-colors"
+                        >
+                          {question}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Chat Interface */}
+        <div className="flex-1 bg-white rounded-lg shadow-sm flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b border-gray-200">
+            <h1 className="text-xl font-semibold flex items-center">
+              <ShawnBot className="w-6 h-6 mr-2 text-corporate-secondary" />
+              Shawn-Bot
+            </h1>
+            <p className="text-sm text-gray-500">
+              Your friendly bearded assistant for technical details, installation, warranty, or maintenance
+            </p>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map(message => (
+              <div
+                key={message.id}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`flex items-start space-x-2 max-w-[80%] ${
+                    message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      message.type === 'user' 
+                        ? 'bg-corporate-secondary text-white' 
+                        : 'bg-corporate-light text-corporate-secondary'
+                    }`}
+                  >
+                    {message.type === 'user' ? (
+                      <User size={16} />
+                    ) : (
+                      <ShawnBot className="w-4 h-4" />
+                    )}
+                  </div>
+                  <div
+                    className={`rounded-lg p-3 ${
+                      message.type === 'user'
+                        ? 'bg-corporate-secondary text-white'
+                        : 'bg-gray-100 text-gray-900'
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    <p className="text-xs mt-1 opacity-70">
+                      {message.timestamp.toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex items-start space-x-2 max-w-[80%]">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-corporate-light text-corporate-secondary">
+                    <ShawnBot className="w-4 h-4" />
+                  </div>
+                  <div className="rounded-lg p-3 bg-gray-100">
+                    <Loader2 className="w-5 h-5 animate-spin text-corporate-secondary" />
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200">
+            <div className="flex space-x-4">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Ask Shawn-Bot about products, installation, warranty, or maintenance..."
+                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-corporate-secondary focus:border-transparent"
+              />
+              <button
+                type="submit"
+                disabled={!inputValue.trim() || isLoading}
+                className="px-4 py-2 bg-corporate-secondary text-white rounded-md hover:bg-corporate-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Send size={20} />
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SmartChatPage;
